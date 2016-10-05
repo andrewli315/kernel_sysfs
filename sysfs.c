@@ -48,14 +48,11 @@ static int __init hw_init(void)
 	if(!hw_kobject)
 		return -ENOMEM;
 	retval = sysfs_create_file(hw_kobject, &hw_attr.attr);
-	if(retval)
-		kobject_put(hw_kobject);
 	return retval;
 }
 static void __exit hw_exit(void)
 {
 	printk(KERN_ALERT "CLEAN UP MODULE\n");
-	kobject_put(hw_kobject);
 }
 void swap_char(char *a,char *b)
 {
