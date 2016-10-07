@@ -6,8 +6,7 @@
 
 MODULE_LICENSE("Dual BSD/GPL");
 
-static char* str;
-static char s[100];
+static int s;
 static struct kobject *hw_kobject;
 void swap_char(char *a,char *b);
 int atoi(char *str);
@@ -19,24 +18,12 @@ static ssize_t s_store(struct kobject*,
 static ssize_t s_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf,"%s\n",s);
+	return sprintf(buf,"%d\n",s);
 }
 static ssize_t s_store(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf, size_t count)
 {
-	sscanf(buf,"%s\n",&str);
-	int i,t;
-    int len = strlen(str);
-    char s2[100];
-    char temp[2];
-    strncpy(temp,str,2);
-    t = atoi(temp);
-    memcpy(s2,str+2,len-2);
-    for(i=0;i<(len/2 - 1);i++)
-    {
-	    swap_char(&s2[i],&s2[t]);
-    }
-	strcpy(s,s2);
+	sscanf(buf,"%du",&s);
 	return count;
 }
 static struct kobj_attribute hw_attr =
