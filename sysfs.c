@@ -7,9 +7,11 @@
 MODULE_LICENSE("Dual BSD/GPL");
 
 static int s;
+char test[40];
 static struct kobject *hw_kobject;
 void swap_char(char *a,char *b);
 int atoi(char *str);
+char* concat(char*,cahr*);
 static ssize_t s_show(struct kobject*,
 			struct kobj_attribute*,char*);
 static ssize_t s_store(struct kobject*,
@@ -18,12 +20,14 @@ static ssize_t s_store(struct kobject*,
 static ssize_t s_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf,"%d\n",s);
+	
+	return sprintf(buf,"%d->%s\n",s,test);
 }
 static ssize_t s_store(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf, size_t count)
 {
 	sscanf(buf,"%du",&s);
+	memcpy(test,buf,strlen(buf)+1);
 	return count;
 }
 static struct kobj_attribute hw_attr =
@@ -57,6 +61,22 @@ int atoi(char *str)
 		sum = sum*10+str[i]-'0';
 	}
 	return sum;
+}
+char* concat(char*a, char*b)
+{
+	int strlen(b);
+	int i = 0;
+	int j = 0;
+	for(i=0;i<len;i++)
+	{
+		if(*(b+i) == ' ')
+    		break;
+	}
+	for(j=0;j<len-i;j++)
+	{
+		*(a+j) = *(b+i+j+1);
+	}
+	return a;
 }
 module_init(hw_init);
 module_exit(hw_exit);
