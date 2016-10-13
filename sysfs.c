@@ -11,7 +11,7 @@ char test[40];
 static struct kobject *hw_kobject;
 void swap_char(char *a,char *b);
 int atoi(char *str);
-char* concat(char*,cahr*);
+char* concat(char*,char*);
 static ssize_t s_show(struct kobject*,
 			struct kobj_attribute*,char*);
 static ssize_t s_store(struct kobject*,
@@ -20,8 +20,23 @@ static ssize_t s_store(struct kobject*,
 static ssize_t s_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	
-	return sprintf(buf,"%d->%s\n",s,test);
+	int i;
+	int len;
+	char str[100];
+	char arr[100];
+	concat(str,test);
+	sprintf(buf,"%s\n",str);
+	len = (int)strlen(str)-1;
+	for(i=0;i<len;i++)
+	{
+		if((i+3) < len)
+			arr[i+3] = *(str+i);
+		else
+			arr[(i+3)%len] = *(str+i);
+
+	}
+	arr[len+1]='\0';
+	return sprintf(buf,"str: %s\n",len,arr);
 }
 static ssize_t s_store(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf, size_t count)
@@ -64,7 +79,7 @@ int atoi(char *str)
 }
 char* concat(char*a, char*b)
 {
-	int strlen(b);
+	int len = strlen(b);
 	int i = 0;
 	int j = 0;
 	for(i=0;i<len;i++)
@@ -76,6 +91,7 @@ char* concat(char*a, char*b)
 	{
 		*(a+j) = *(b+i+j+1);
 	}
+	*(a+j+1) = '\0';
 	return a;
 }
 module_init(hw_init);
