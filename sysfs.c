@@ -8,6 +8,19 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 static int s;
 char test[40];
+
+static char* s_name;
+static char* c_name;
+static char* t_name;
+
+static char* ss_name;
+static char* cc_name;
+static char* tt_name;
+
+static int mask = 111;
+static int permission1 = 1;
+static int permission2 = 1;
+static int permission3 = 1;
 static struct kobject *hw_kobject;
 void swap_char(char *a,char *b);
 int atoi(char *str);
@@ -29,6 +42,13 @@ static ssize_t t_store(struct kobject*,
 			struct kobj_attribute*, const char*,size_t);
 
 
+module_param(ss_name, charp, S_IRUGO); 
+
+module_param(cc_name, charp, S_IRUGO);
+
+module_param(tt_name, charp, S_IRUGO);
+
+module_param(mask,int , S_IRUGO);
 
 static ssize_t s_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
@@ -60,37 +80,39 @@ static ssize_t s_store(struct kobject *kobject,
 }
 
 
-static ssize_t s_show(struct kobject *kobject,
+static ssize_t c_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
 	
 	return sprintf(buf,"String");
 }
-static ssize_t s_store(struct kobject *kobject,
+static ssize_t c_store(struct kobject *kobject,
 			struct kobj_attribute *attr,const char *buf, size_t count)
 {
 	return count;
 }
-static ssize_t s_show(struct kobject *kobject,
+static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf,"String");
 }
-static ssize_t s_store(struct kobject *kobject,
+static ssize_t t_store(struct kobject *kobject,
 			struct kobj_attribute *attr,const char *buf, size_t count)
 {
+	sscanf(buf,"%du",&s);
+	memcpy(test,buf,strlen(buf));
 	return count;
 }
 
 
 static struct kobj_attribute hw_attr1 =
-		 __ATTR(swap_string,0660,s_show,s_store);
+		 __ATTR(s_name,0660,s_show,s_store);
 
 static struct kobj_attribute hw_attr2 =
-		 __ATTR(calc,0660,c_show,c_store);
+		 __ATTR(c_name,0660,c_show,c_store);
 
 static struct kobj_attribute hw_attr3 =
-		 __ATTR(tree,0660,t_show,t_store);
+		 __ATTR(t_name,0660,t_show,t_store);
 
 static struct attribute *attrs[] = {
        &hw_attr1.attr,
@@ -100,12 +122,29 @@ static struct attribute *attrs[] = {
 };	 
 static struct attribute_group attr_group = {
        .attrs = attrs,
+       .mode = 
 };
 static int __init hw_init(void)
 {
 	int retval;
+	if(mask <100)
+	{
+		mask = (mask/8)*10 + (mask%8);
+	}
+	if(mask /100 == 1)
+		s_name = ss_name
+	else
+		s_name = "string_swap";
+	if((mask/10)%10 == 1)
+		c_name = cc_name;
+	else
+		c_name = "calc";
+	if(mask%100 == 1)
+		t_name = tt_name;
+	else
+		t_name = "sum_tree";
+
 	hw_kobject = kobject_create_and_add("hw1",kernel_kobj);
-	
 	retval = sysfs_create_file(hw_kobject, &attr_group);
 	return retval;
 }
