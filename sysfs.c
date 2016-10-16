@@ -14,7 +14,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define N 100
 
 int num_stack[N];
-static int result=0;
+static int result;
 int op_stack[N];
 int n_top = 0;
 int op_top = -1;
@@ -40,7 +40,6 @@ void swap_char(char *a,char *b);
 int atoi(char *str);
 char* concat(char*,char*);
 //function for infix calculator
-void infix_calc(void);
 void n_push(int);
 int n_pop(void);
 char op_pop(void);
@@ -106,112 +105,7 @@ static ssize_t s_store(struct kobject *kobject,
 static ssize_t c_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	
-	return sprintf(buf,"String");
-}
-static ssize_t c_store(struct kobject *kobject,
-			struct kobj_attribute *attr,const char *buf, size_t count)
-{
-	return count;
-}
-static ssize_t t_show(struct kobject *kobject,
-			struct kobj_attribute *attr, char *buf)
-{
-	return sprintf(buf,"String");
-}
-static ssize_t t_store(struct kobject *kobject,
-			struct kobj_attribute *attr,const char *buf, size_t count)
-{
-	sscanf(buf,"%du",&s);
-	memcpy(test,buf,strlen(buf));
-	return count;
-}
-
-
-static struct kobj_attribute hw_attr1 =
-		 __ATTR(s_name,0660,s_show,s_store);
-
-static struct kobj_attribute hw_attr2 =
-		 __ATTR(c_name,0660,c_show,c_store);
-
-static struct kobj_attribute hw_attr3 =
-		 __ATTR(t_name,0660,t_show,t_store);
-
-static struct attribute *attrs[] = {
-       &hw_attr1.attr,
-       &hw_attr2.attr,
-       &hw_attr3.attr,
-       NULL,   /* need to NULL terminate the list of attributes */
-};	 
-static struct attribute_group attr_group = {
-       .attrs = attrs,
-};
-static int __init hw_init(void)
-{
-	int retval;
-	if(mask <100)
-	{
-		mask = (mask/8)*10 + (mask%8);
-	}
-	if(mask /100 == 1)
-		s_name = ss_name;
-	else
-		s_name = "string_swap";
-	if((mask/10)%10 == 1)
-		c_name = cc_name;
-	else
-		c_name = "calc";
-	if(mask%100 == 1)
-		t_name = tt_name;
-	else
-		t_name = "sum_tree";
-
-	hw_kobject = kobject_create_and_add("hw1",kernel_kobj);
-	retval = sysfs_create_file(hw_kobject, &attr_group);
-	return retval;
-}
-static void __exit hw_exit(void)
-{
-		printk(KERN_ALERT "CLEAN UP MODULE");
-		kobject_put(hw_kobject);
-}
-void swap_char(char *a,char *b)
-{
-	char temp;
-	temp = *a;
-	*a = *b;
-	*b = temp;
-}
-int atoi(char *str)
-{
-	int i;
-	int sum =0;
-	for(i=0;str[i]!='\0';i++)
-	{
-		sum = sum*10+str[i]-'0';
-	}
-	return sum;
-}
-char* concat(char*a, char*b)
-{
-	int len = strlen(b);
-	int i = 0;
-	int j = 0;
-	for(i=0;i<len;i++)
-	{
-		if(*(b+i) == ' ')
-    		break;
-	}
-	for(j=0;j<len-i;j++)
-	{
-		*(a+j) = *(b+i+j+1);
-	}
-	*(a+j+1) = '\0';
-	return a;
-}
-void infix_calc(void)
-{
-	int i=0;
+    int i=0;
 	char integer[N];
 	char op;
 	int j=0;
@@ -261,6 +155,107 @@ void infix_calc(void)
 		}
 		i++;
 	}
+	return sprintf(buf,"answer is %d\n",result);
+}
+static ssize_t c_store(struct kobject *kobject,
+			struct kobj_attribute *attr,const char *buf, size_t count)
+{
+	memcpy(input,buf,strlen(buf));
+	return count;
+}
+static ssize_t t_show(struct kobject *kobject,
+			struct kobj_attribute *attr, char *buf)
+{
+	return sprintf(buf,"String");
+}
+static ssize_t t_store(struct kobject *kobject,
+			struct kobj_attribute *attr,const char *buf, size_t count)
+{
+	memcpy(test,buf,strlen(buf));
+	return count;
+}
+
+
+static struct kobj_attribute hw_attr1 =
+		 __ATTR(string_swap,0660,s_show,s_store);
+
+static struct kobj_attribute hw_attr2 =
+		 __ATTR(calc,0660,c_show,c_store);
+
+static struct kobj_attribute hw_attr3 =
+		 __ATTR(sum_tree,0660,t_show,t_store);
+
+static struct attribute *attrs[] = {
+       &hw_attr1.attr,
+       &hw_attr2.attr,
+       &hw_attr3.attr,
+       NULL,   /* need to NULL terminate the list of attributes */
+};	 
+static struct attribute_group attr_group = {
+       .attrs = attrs,
+};
+static int __init hw_init(void)
+{
+	int retval;
+	if(mask <100)
+	{
+		mask = (mask/8)*10 + (mask%8);
+	}
+	if(mask /100 == 1)
+		s_name = ss_name;
+	else
+		s_name = "string_swap";
+	if((mask/10)%10 == 1)
+		c_name = cc_name;
+	else
+		c_name = "calc";
+	if(mask%100 == 1)
+		t_name = tt_name;
+	else
+		t_name = "sum_tree";
+
+	hw_kobject = kobject_create_and_add("hw1",kernel_kobj);
+	retval = sysfs_create_group(hw_kobject, &attr_group);
+	return retval;
+}
+static void __exit hw_exit(void)
+{
+		printk(KERN_ALERT "CLEAN UP MODULE");
+		kobject_put(hw_kobject);
+}
+void swap_char(char *a,char *b)
+{
+	char temp;
+	temp = *a;
+	*a = *b;
+	*b = temp;
+}
+int atoi(char *str)
+{
+	int i;
+	int sum =0;
+	for(i=0;str[i]!='\0';i++)
+	{
+		sum = sum*10+str[i]-'0';
+	}
+	return sum;
+}
+char* concat(char*a, char*b)
+{
+	int len = strlen(b);
+	int i = 0;
+	int j = 0;
+	for(i=0;i<len;i++)
+	{
+		if(*(b+i) == ' ')
+    		break;
+	}
+	for(j=0;j<len-i;j++)
+	{
+		*(a+j) = *(b+i+j+1);
+	}
+	*(a+j+1) = '\0';
+	return a;
 }
 
 void n_push(int num)
@@ -277,6 +272,7 @@ int n_pop(void)
 	if(n_top<0)
 	{
 		printk(KERN_ALERT "index is out of range\n");
+		return 0;
 	}
 	else
 		return num_stack[n_top--];
@@ -286,19 +282,21 @@ void op_push(char op)
 	if(op_top>=N-1)
 	{
 		printk(KERN_ALERT "operator stack is full\n");
-
 	}
 	op_stack[++op_top] = op;
 }
+
 char op_pop(void)
 {
 	if(op_top<0)
 	{
 		printk(KERN_ALERT "opstack index is out of range\n");
+		return '\0';
 	}
 	else
 		return op_stack[op_top--];
 }
+
 char top(void)
 {
 	return op_stack[op_top];
