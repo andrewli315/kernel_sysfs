@@ -14,10 +14,11 @@ MODULE_LICENSE("Dual BSD/GPL");
 #define N 100
 
 int num_stack[N];
+static int result=0;
 int op_stack[N];
 int n_top = 0;
 int op_top = -1;
-static input[N];
+static char input[N];
 static int s;
 char test[40];
 
@@ -30,32 +31,21 @@ static char* cc_name;
 static char* tt_name;
 
 static int mask = 111;
-static int permission1 = 1;
-static int permission2 = 1;
-static int permission3 = 1;
-static struct kobject *hw_kobject;
-static int stack[N]={'0'};
-static int top =-1;
-static int top_operand = -1;
-char input[N];
 
-char top_data();
-int prior(char);
-int isOperator(char);
-void reverse(char[]);
-int pop();
-void push(int);
-void dispstack();
-void print(char[]);
+static struct kobject *hw_kobject;
+
+//declare needy function
+//fucntion for string swap
 void swap_char(char *a,char *b);
 int atoi(char *str);
 char* concat(char*,char*);
-void infix_calc();
+//function for infix calculator
+void infix_calc(void);
 void n_push(int);
-int n_pop();
-char op_pop();
+int n_pop(void);
+char op_pop(void);
 void op_push(char);
-char top();
+char top(void);
 int prior(char);
 int isOp(char);
 
@@ -155,7 +145,6 @@ static struct attribute *attrs[] = {
 };	 
 static struct attribute_group attr_group = {
        .attrs = attrs,
-       .mode = 
 };
 static int __init hw_init(void)
 {
@@ -165,7 +154,7 @@ static int __init hw_init(void)
 		mask = (mask/8)*10 + (mask%8);
 	}
 	if(mask /100 == 1)
-		s_name = ss_name
+		s_name = ss_name;
 	else
 		s_name = "string_swap";
 	if((mask/10)%10 == 1)
@@ -220,22 +209,19 @@ char* concat(char*a, char*b)
 	*(a+j+1) = '\0';
 	return a;
 }
-void infix_calc()
+void infix_calc(void)
 {
 	int i=0;
 	char integer[N];
 	char op;
 	int j=0;
 	int operand1,operand2;
-	int result=0;
 	op_push('#');
 	while(input[i]!='\0')
 	{
-		print();
 		if(input[i] >= '0' && input[i] <= '9' )
 		{
 			integer[j]=input[i];
-			printf("%c \n",integer[j]);
 			j++;
 		}
 		else if(isOp(input[i]) == 1 || input[i]=='=')
@@ -257,19 +243,14 @@ void infix_calc()
 					op = op_pop();
 					switch(op){
 						case '+':result = operand1+operand2;
-							printf("%d %c %d = %d \n",operand1,op,operand2,result);
 							break;
 						case '-':result = operand1-operand2;
-							printf("%d %c %d = %d \n",operand1,op,operand2,result);
 							break;
 						case '*':result = operand1*operand2;
-							printf("%d %c %d = %d \n",operand1,op,operand2,result);
 							break;
 						case '/':result = operand1/operand2;
-							printf("%d %c %d = %d \n",operand1,op,operand2,result);
 							break;
 						case '%':result = operand1%operand2;
-							printf("%d %c %d = %d \n",operand1,op,operand2,result);
 							break;
 					}
 					n_push(result);
@@ -280,7 +261,6 @@ void infix_calc()
 		}
 		i++;
 	}
-	printf("result is %d\n",n_pop());
 }
 
 void n_push(int num)
@@ -288,17 +268,15 @@ void n_push(int num)
 	if(n_top >= N-1)
 	{
 		printk(KERN_ALERT "number stack is full\n");
-		exit(-1);
 	}
 	else
 		num_stack[++n_top] = num;
 }
-int n_pop()
+int n_pop(void)
 {
 	if(n_top<0)
 	{
 		printk(KERN_ALERT "index is out of range\n");
-		exit(-1);
 	}
 	else
 		return num_stack[n_top--];
@@ -308,21 +286,20 @@ void op_push(char op)
 	if(op_top>=N-1)
 	{
 		printk(KERN_ALERT "operator stack is full\n");
-		exit(-1);
+
 	}
 	op_stack[++op_top] = op;
 }
-char op_pop()
+char op_pop(void)
 {
 	if(op_top<0)
 	{
 		printk(KERN_ALERT "opstack index is out of range\n");
-		exit(-1);
 	}
 	else
 		return op_stack[op_top--];
 }
-char top()
+char top(void)
 {
 	return op_stack[op_top];
 }
