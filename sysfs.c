@@ -4,8 +4,20 @@
 #include <linux/sysfs.h>
 #include <linux/string.h>
 
+#define N 100
+#define bool int
+#define true 1
+#define false 0
+
 MODULE_LICENSE("Dual BSD/GPL");
 
+#define N 100
+
+int num_stack[N];
+int op_stack[N];
+int n_top = 0;
+int op_top = -1;
+static input[N];
 static int s;
 char test[40];
 
@@ -22,9 +34,30 @@ static int permission1 = 1;
 static int permission2 = 1;
 static int permission3 = 1;
 static struct kobject *hw_kobject;
+static int stack[N]={'0'};
+static int top =-1;
+static int top_operand = -1;
+char input[N];
+
+char top_data();
+int prior(char);
+int isOperator(char);
+void reverse(char[]);
+int pop();
+void push(int);
+void dispstack();
+void print(char[]);
 void swap_char(char *a,char *b);
 int atoi(char *str);
 char* concat(char*,char*);
+void infix_calc();
+void n_push(int);
+int n_pop();
+char op_pop();
+void op_push(char);
+char top();
+int prior(char);
+int isOp(char);
 
 static ssize_t s_show(struct kobject*,
 			struct kobj_attribute*,char*);
@@ -187,6 +220,151 @@ char* concat(char*a, char*b)
 	*(a+j+1) = '\0';
 	return a;
 }
+void infix_calc()
+{
+	int i=0;
+	char integer[N];
+	char op;
+	int j=0;
+	int operand1,operand2;
+	int result=0;
+	op_push('#');
+	while(input[i]!='\0')
+	{
+		print();
+		if(input[i] >= '0' && input[i] <= '9' )
+		{
+			integer[j]=input[i];
+			printf("%c \n",integer[j]);
+			j++;
+		}
+		else if(isOp(input[i]) == 1 || input[i]=='=')
+		{
+			integer[j] = '\0';
+			n_push(atoi(integer));
+			j=0;
+			if(prior(input[i]) > prior(top()))
+			{
+				op_push(input[i]);
+			
+			}
+			else
+			{
+				while(prior(input[i]) <= prior(top()))
+				{
+					operand2 = n_pop();
+					operand1 = n_pop();
+					op = op_pop();
+					switch(op){
+						case '+':result = operand1+operand2;
+							printf("%d %c %d = %d \n",operand1,op,operand2,result);
+							break;
+						case '-':result = operand1-operand2;
+							printf("%d %c %d = %d \n",operand1,op,operand2,result);
+							break;
+						case '*':result = operand1*operand2;
+							printf("%d %c %d = %d \n",operand1,op,operand2,result);
+							break;
+						case '/':result = operand1/operand2;
+							printf("%d %c %d = %d \n",operand1,op,operand2,result);
+							break;
+						case '%':result = operand1%operand2;
+							printf("%d %c %d = %d \n",operand1,op,operand2,result);
+							break;
+					}
+					n_push(result);
+				}
+				if(input[i]!='=')
+						op_push(input[i]);
+			}
+		}
+		i++;
+	}
+	printf("result is %d\n",n_pop());
+}
+
+void n_push(int num)
+{
+	if(n_top >= N-1)
+	{
+		printk(KERN_ALERT "number stack is full\n");
+		exit(-1);
+	}
+	else
+		num_stack[++n_top] = num;
+}
+int n_pop()
+{
+	if(n_top<0)
+	{
+		printk(KERN_ALERT "index is out of range\n");
+		exit(-1);
+	}
+	else
+		return num_stack[n_top--];
+}
+void op_push(char op)
+{
+	if(op_top>=N-1)
+	{
+		printk(KERN_ALERT "operator stack is full\n");
+		exit(-1);
+	}
+	op_stack[++op_top] = op;
+}
+char op_pop()
+{
+	if(op_top<0)
+	{
+		printk(KERN_ALERT "opstack index is out of range\n");
+		exit(-1);
+	}
+	else
+		return op_stack[op_top--];
+}
+char top()
+{
+	return op_stack[op_top];
+}
+int prior(char op)
+{
+	switch(op){
+		case '+':return 2;
+			break;
+		case '-':return 2;
+			break;
+		case '*':return 4;
+			break;
+		case '/':return 4;
+			break;
+		case '%':return 4;
+			break;
+		case '#':return 0;
+			break;
+		case '=':return 1;
+			break;
+		default:return 0;
+			break;
+	}
+}
+int isOp(char c)
+{
+	switch(c){
+		case '+':return 1;
+			break;
+		case '-':return 1;
+			break;
+		case '*':return 1;
+			break;
+		case '/':return 1;
+			break;
+		case '%':return 1;
+			break;
+		default:return 0;
+			break;
+	}
+}
+
 
 module_init(hw_init);
 module_exit(hw_exit);
