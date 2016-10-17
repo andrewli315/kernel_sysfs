@@ -26,9 +26,9 @@ static char* s_name;
 static char* c_name;
 static char* t_name;
 
-static char* ss_name;
-static char* cc_name;
-static char* tt_name;
+static char* name1;
+static char* name2;
+static char* name3;
 
 static int mask = 111;
 
@@ -64,11 +64,11 @@ static ssize_t t_store(struct kobject*,
 			struct kobj_attribute*, const char*,size_t);
 
 
-module_param(ss_name, charp, S_IRUGO); 
+module_param(name1, charp, S_IRUGO); 
 
-module_param(cc_name, charp, S_IRUGO);
+module_param(name2, charp, S_IRUGO);
 
-module_param(tt_name, charp, S_IRUGO);
+module_param(name3, charp, S_IRUGO);
 
 module_param(mask,int , S_IRUGO);
 
@@ -108,9 +108,12 @@ static ssize_t c_show(struct kobject *kobject,
     int i=0;
 	char integer[N];
 	char op;
+	int length = strlen(input);
 	int j=0;
 	int operand1,operand2;
 	op_push('#');
+	input[length] = '=';
+	input[length+1] = '\0';
 	while(input[i]!='\0')
 	{
 		if(input[i] >= '0' && input[i] <= '9' )
@@ -202,18 +205,14 @@ static int __init hw_init(void)
 		mask = (mask/8)*10 + (mask%8);
 	}
 	if(mask /100 == 1)
-		s_name = ss_name;
-	else
-		s_name = "string_swap";
+	{
+		hw_attr1.attr.name = name1;
+	}
 	if((mask/10)%10 == 1)
-		c_name = cc_name;
-	else
-		c_name = "calc";
+		hw_attr2.attr.name = name2;
 	if(mask%100 == 1)
-		t_name = tt_name;
-	else
-		t_name = "sum_tree";
-
+		hw_attr3.attr.name = name3;
+		
 	hw_kobject = kobject_create_and_add("hw1",kernel_kobj);
 	retval = sysfs_create_group(hw_kobject, &attr_group);
 	return retval;
@@ -343,4 +342,3 @@ int isOp(char c)
 
 module_init(hw_init);
 module_exit(hw_exit);
-
