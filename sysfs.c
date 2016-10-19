@@ -184,7 +184,7 @@ static ssize_t c_store(struct kobject *kobject,
 static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	char *res_str;
+	char res_str[10];
 	node **p = (node**)vmalloc(sizeof(node*));
 	node *tmp;
 	int length = strlen(test);
@@ -201,13 +201,14 @@ static ssize_t t_show(struct kobject *kobject,
 		if(str[i] == '(')
 		{
 			num[j] = '\0';
-			sprintf(res_str,"%d\n",atoi(num));
+			printk(KERN_ALERT "num = %d\n",atoi(num));
 			push(atoi(num));
 			j=0;
 		}
 		else if(str[i] >= '0' && str[i] <= '9')
 		{
 			num[j++] = str[i];
+			printk(KERN_ALERT "num = %c\n",num[j-1]);
 		}
 		else if(str[i] == ')')
 		{
@@ -245,7 +246,7 @@ static ssize_t t_show(struct kobject *kobject,
 		}
 		i++;
 	}
-	/*
+	
 	for(i=0;i<k;i++)
 	{
 		tmp = p[i];
@@ -256,12 +257,13 @@ static ssize_t t_show(struct kobject *kobject,
 		}
 		temp += sprintf(res_str+temp," %d, ",sum);
 		sum = 0;
-	}*/
-	return sprintf(buf,"%d,%s\n",atoi(num),res_str);
+	}
+	return sprintf(buf,"%s\n",res_str);
 }
 static ssize_t t_store(struct kobject *kobject,
 			struct kobj_attribute *attr,const char *buf, size_t count)
 {
+	memset(str,'\0',sizeof(str));
 	memcpy(str,buf,strlen(buf));
 	return count;
 }
