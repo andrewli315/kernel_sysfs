@@ -3,33 +3,41 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <linux/string.h>
-
+#include <linux/slab.h>
 #define N 100
-#define bool int
-#define true 1
-#define false 0
 
 MODULE_LICENSE("Dual BSD/GPL");
 
 #define N 100
 
+//variable for calculator
 int num_stack[N];
 static int result;
 int op_stack[N];
 int n_top = 0;
 int op_top = -1;
 static char input[N];
+
+//variable for string 
 static int s;
 char test[40];
 
-static char* s_name;
-static char* c_name;
-static char* t_name;
+//variable for sum tree
+static char str[N];
+int stack[N];
+int cp_stk[N];
+int s_top = -1;
+int cp_top = -1;
+typedef struct NODE{
+	int num;
+	struct NODE *parent;
+}node;
 
 static char* name1;
 static char* name2;
 static char* name3;
 
+//initialize the 
 static int mask = 111;
 
 static struct kobject *hw_kobject;
@@ -47,6 +55,13 @@ void op_push(char);
 char top(void);
 int prior(char);
 int isOp(char);
+//function for sum tree
+void copy(void);
+int cp_pop(void);
+int pop(void);
+int isEmpty(void);
+void push(int);
+node* new_node(int x);
 
 static ssize_t s_show(struct kobject*,
 			struct kobj_attribute*,char*);
@@ -169,12 +184,81 @@ static ssize_t c_store(struct kobject *kobject,
 static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf,"String");
+	char res_str[N];
+	node **p = (node**)kmalloc(sizeof(node*),GFP_KERNEL);
+	node *tmp;
+	int length = strlen(test);
+	int i,k=0,j=0;
+	int temp = 0;
+	int sum=0;
+	char num[N];
+	str[length] = '\0';
+	for(i=0;i<N;i++)
+		p[i] = (node*)kmalloc(sizeof(node),GFP_KERNEL);
+	i=0;
+	while(str[i] != '\0')
+	{
+		if(str[i] == '(')
+		{
+			num[j] = '\0';
+			push(atoi(num));
+			j=0;
+		}
+		else if(str[i] >= '0' && str[i] <= '9')
+		{
+			num[j++] = str[i];
+		}
+		else if(str[i] == ')')
+		{
+			if(str[i-1] >= '0' && str[i-1] <= '9')
+			{
+				num[j] = '\0';
+				p[k] = new_node(atoi(num));
+				tmp = p[k];
+				while(isEmpty() != 0)
+				{
+					tmp->parent = new_node(pop());
+					tmp = tmp->parent;
+				}
+				j=0;
+				k++;
+				copy();
+				pop();
+				cp_pop();
+			}
+		}
+		else if(str[i] == ' ')
+		{
+			num[j] = '\0';
+			p[k] = new_node(atoi(num));
+			tmp = p[k];
+			while(isEmpty()!=0)
+			{
+				tmp->parent = new_node(pop());
+				tmp = tmp->parent;
+			}
+			j=0;
+			copy();
+			k++;
+		}
+		i++;
+	}
+	for(i=0;i<k;i++)
+	{
+		tmp = p[i];
+		while(tmp !=NULL)
+		{
+			sum += tmp->num;
+			tmp = tmp->parent;
+		}
+		temp += sprintf(res_str+temp," %d, ",sum);
+	}
+	return sprintf(buf,"%s",res_str);
 }
 static ssize_t t_store(struct kobject *kobject,
 			struct kobj_attribute *attr,const char *buf, size_t count)
 {
-	memcpy(test,buf,strlen(buf));
+	memcpy(str,buf,strlen(buf));
 	return count;
 }
 
@@ -339,6 +423,52 @@ int isOp(char c)
 	}
 }
 
-
+node* new_node(int x)
+{
+	node *new;
+	new = (node*)kmalloc(sizeof(node),GFP_KERNEL);
+	new->num = x;
+	return new;
+}
+int isEmpty(void)
+{
+	if(s_top == -1)
+		return 0;
+	else 
+		return 1;
+}
+int pop(void)
+{
+	if(s_top < 0)
+	{
+		printk(KERN_ALERT "stack is empty");
+		return 0;
+	}
+	return stack[s_top--];
+}
+int cp_pop(void)
+{
+	if(cp_top < 0)
+	{
+		printk(KERN_ALERT "stack is empty");
+		return 0;
+	}
+	return cp_stk[cp_top--];
+}
+void push(int x)
+{
+		
+	stack[++s_top] = x;
+	cp_stk[++cp_top] = x;
+}
+void copy(void)
+{
+	int i;
+	for(i=0;i<N;i++)
+	{
+		stack[i] = cp_stk[i];
+	}
+	s_top = cp_top;
+}
 module_init(hw_init);
 module_exit(hw_exit);
