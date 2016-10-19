@@ -3,7 +3,7 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 #include <linux/string.h>
-#include <linux/slab.h>
+#include <linux/vmalloc.h>
 #define N 100
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -33,12 +33,12 @@ typedef struct NODE{
 	struct NODE *parent;
 }node;
 
-static char* name1;
-static char* name2;
-static char* name3;
+static char* name1="";
+static char* name2="";
+static char* name3="";
 
 //initialize the 
-static int mask = 111;
+static int mask = 0;
 
 static struct kobject *hw_kobject;
 
@@ -184,8 +184,8 @@ static ssize_t c_store(struct kobject *kobject,
 static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	char res_str[N];
-	node **p = (node**)kmalloc(sizeof(node*),GFP_KERNEL);
+	char *res_str;
+	node **p = (node**)vmalloc(sizeof(node*));
 	node *tmp;
 	int length = strlen(test);
 	int i,k=0,j=0;
@@ -194,13 +194,14 @@ static ssize_t t_show(struct kobject *kobject,
 	char num[N];
 	str[length] = '\0';
 	for(i=0;i<N;i++)
-		p[i] = (node*)kmalloc(sizeof(node),GFP_KERNEL);
+		p[i] = (node*)vmalloc(sizeof(node));
 	i=0;
 	while(str[i] != '\0')
 	{
 		if(str[i] == '(')
 		{
 			num[j] = '\0';
+			sprintf(res_str,"%d\n",atoi(num));
 			push(atoi(num));
 			j=0;
 		}
@@ -214,6 +215,7 @@ static ssize_t t_show(struct kobject *kobject,
 			{
 				num[j] = '\0';
 				p[k] = new_node(atoi(num));
+				printk(KERN_ALERT "num = %d\n",atoi(num));
 				tmp = p[k];
 				while(isEmpty() != 0)
 				{
@@ -243,6 +245,7 @@ static ssize_t t_show(struct kobject *kobject,
 		}
 		i++;
 	}
+	/*
 	for(i=0;i<k;i++)
 	{
 		tmp = p[i];
@@ -252,8 +255,9 @@ static ssize_t t_show(struct kobject *kobject,
 			tmp = tmp->parent;
 		}
 		temp += sprintf(res_str+temp," %d, ",sum);
-	}
-	return sprintf(buf,"%s",res_str);
+		sum = 0;
+	}*/
+	return sprintf(buf,"%d,%s\n",atoi(num),res_str);
 }
 static ssize_t t_store(struct kobject *kobject,
 			struct kobj_attribute *attr,const char *buf, size_t count)
@@ -426,7 +430,7 @@ int isOp(char c)
 node* new_node(int x)
 {
 	node *new;
-	new = (node*)kmalloc(sizeof(node),GFP_KERNEL);
+	new = (node*)vmalloc(sizeof(node));
 	new->num = x;
 	return new;
 }
