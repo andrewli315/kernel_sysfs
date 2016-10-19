@@ -4,6 +4,7 @@
 #include <linux/sysfs.h>
 #include <linux/string.h>
 #include <linux/vmalloc.h>
+#include <linux/slab.h>
 #define N 100
 
 MODULE_LICENSE("Dual BSD/GPL");
@@ -184,16 +185,16 @@ static ssize_t c_store(struct kobject *kobject,
 static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
-	char res_str[10];
+	char res_str[N];
 	node **p = (node**)vmalloc(sizeof(node*));
 	node *tmp;
-	int length = strlen(test);
+	int length = strlen(str);
 	int i,k=0,j=0;
 	int temp = 0;
 	int sum=0;
 	char num[N];
 	str[length] = '\0';
-	for(i=0;i<N;i++)
+	for(i=0;i<30;i++)
 		p[i] = (node*)vmalloc(sizeof(node));
 	i=0;
 	while(str[i] != '\0')
@@ -201,14 +202,12 @@ static ssize_t t_show(struct kobject *kobject,
 		if(str[i] == '(')
 		{
 			num[j] = '\0';
-			printk(KERN_ALERT "num = %d\n",atoi(num));
 			push(atoi(num));
 			j=0;
 		}
 		else if(str[i] >= '0' && str[i] <= '9')
 		{
 			num[j++] = str[i];
-			printk(KERN_ALERT "num = %c\n",num[j-1]);
 		}
 		else if(str[i] == ')')
 		{
@@ -216,7 +215,6 @@ static ssize_t t_show(struct kobject *kobject,
 			{
 				num[j] = '\0';
 				p[k] = new_node(atoi(num));
-				printk(KERN_ALERT "num = %d\n",atoi(num));
 				tmp = p[k];
 				while(isEmpty() != 0)
 				{
@@ -246,16 +244,16 @@ static ssize_t t_show(struct kobject *kobject,
 		}
 		i++;
 	}
-	
+	printk(KERN_ALERT "k = %d\n",k);
 	for(i=0;i<k;i++)
 	{
 		tmp = p[i];
-		while(tmp !=NULL)
+		while(tmp != NULL)
 		{
 			sum += tmp->num;
 			tmp = tmp->parent;
 		}
-		temp += sprintf(res_str+temp," %d, ",sum);
+		temp += sprintf(res_str+temp,"%d, ",sum);
 		sum = 0;
 	}
 	return sprintf(buf,"%s\n",res_str);
