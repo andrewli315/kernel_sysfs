@@ -29,17 +29,13 @@ int stack[N];
 int cp_stk[N];
 int s_top = -1;
 int cp_top = -1;
-typedef struct NODE{
-	int num;
-	struct NODE *parent;
-}node;
 
-static char* name1="";
-static char* name2="";
-static char* name3="";
+static char* name1="string_swap";
+static char* name2="calc";
+static char* name3="sum_tree";
 
 //initialize the 
-static int mask = 0;
+static int mask = 111;
 
 static struct kobject *hw_kobject;
 
@@ -62,7 +58,6 @@ int cp_pop(void);
 int pop(void);
 int isEmpty(void);
 void push(int);
-node* new_node(int x);
 
 static ssize_t s_show(struct kobject*,
 			struct kobj_attribute*,char*);
@@ -186,16 +181,15 @@ static ssize_t t_show(struct kobject *kobject,
 			struct kobj_attribute *attr, char *buf)
 {
 	char res_str[N];
-	node **p = (node**)vmalloc(sizeof(node*));
-	node *tmp;
+	int result[N];
 	int length = strlen(str);
 	int i,k=0,j=0;
 	int temp = 0;
-	int sum=0;
+	int sum;
 	char num[N];
 	str[length] = '\0';
-	for(i=0;i<30;i++)
-		p[i] = (node*)vmalloc(sizeof(node));
+	for(i=0;i<100;i++)
+		result[i] = 0;
 	i=0;
 	while(str[i] != '\0')
 	{
@@ -214,12 +208,12 @@ static ssize_t t_show(struct kobject *kobject,
 			if(str[i-1] >= '0' && str[i-1] <= '9')
 			{
 				num[j] = '\0';
-				p[k] = new_node(atoi(num));
-				tmp = p[k];
+				result[k] = atoi(num);
+				
 				while(isEmpty() != 0)
 				{
-					tmp->parent = new_node(pop());
-					tmp = tmp->parent;
+					sum = pop();
+					result[k] += sum;
 				}
 				j=0;
 				k++;
@@ -231,12 +225,11 @@ static ssize_t t_show(struct kobject *kobject,
 		else if(str[i] == ' ')
 		{
 			num[j] = '\0';
-			p[k] = new_node(atoi(num));
-			tmp = p[k];
+			result[k] = atoi(num);
 			while(isEmpty()!=0)
 			{
-				tmp->parent = new_node(pop());
-				tmp = tmp->parent;
+				sum = pop();
+				result[k] += sum;
 			}
 			j=0;
 			copy();
@@ -247,14 +240,7 @@ static ssize_t t_show(struct kobject *kobject,
 	printk(KERN_ALERT "k = %d\n",k);
 	for(i=0;i<k;i++)
 	{
-		tmp = p[i];
-		while(tmp != NULL)
-		{
-			sum += tmp->num;
-			tmp = tmp->parent;
-		}
-		temp += sprintf(res_str+temp,"%d, ",sum);
-		sum = 0;
+		temp += sprintf(res_str+temp,"%d, ",result[i]);
 	}
 	return sprintf(buf,"%s\n",res_str);
 }
@@ -425,14 +411,6 @@ int isOp(char c)
 		default:return 0;
 			break;
 	}
-}
-
-node* new_node(int x)
-{
-	node *new;
-	new = (node*)vmalloc(sizeof(node));
-	new->num = x;
-	return new;
 }
 int isEmpty(void)
 {
