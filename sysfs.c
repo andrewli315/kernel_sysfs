@@ -280,7 +280,7 @@ static int __init hw_init(void)
 		hw_attr2.attr.name = name2;
 		retval = sysfs_create_file(hw_kobject, &hw_attr2.attr);
 	}
-	if(mask%100 == 1)
+	if(mask%10 == 1)
 	{
 		hw_attr3.attr.name = name3;
 		retval = sysfs_create_file(hw_kobject, &hw_attr3.attr);
