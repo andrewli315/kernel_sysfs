@@ -262,18 +262,9 @@ static struct kobj_attribute hw_attr2 =
 static struct kobj_attribute hw_attr3 =
 		 __ATTR(sum_tree,0660,t_show,t_store);
 
-static struct attribute *attrs[] = {
-       &hw_attr1.attr,
-       &hw_attr2.attr,
-       &hw_attr3.attr,
-       NULL,   /* need to NULL terminate the list of attributes */
-};	 
-static struct attribute_group attr_group = {
-       .attrs = attrs,
-};
 static int __init hw_init(void)
 {
-	int retval;
+	int retval = 0;
 	hw_kobject = kobject_create_and_add("hw1",kernel_kobj);
 	if(mask <100)
 	{
@@ -282,17 +273,17 @@ static int __init hw_init(void)
 	if(mask /100 == 1)
 	{
 		hw_attr1.attr.name = name1;
-		retval = sysfs_create_file(hw_kobject, &hw_attr1);
+		retval = sysfs_create_file(hw_kobject, &hw_attr1.attr);
 	}
 	if((mask/10)%10 == 1)
 	{
 		hw_attr2.attr.name = name2;
-		retval = sysfs_create_file(hw_kobject, &hw_attr2);
+		retval = sysfs_create_file(hw_kobject, &hw_attr2.attr);
 	}
 	if(mask%100 == 1)
 	{
 		hw_attr3.attr.name = name3;
-		retval = sysfs_create_file(hw_kobject, &hw_attr3);
+		retval = sysfs_create_file(hw_kobject, &hw_attr3.attr);
 	}
 	return retval;
 }
